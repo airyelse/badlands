@@ -95,7 +95,7 @@ class Form implements Renderable
     use HasLayout;
     use ResolveField;
     use HasFormResponse {
-        setCurrentUrl as defaultSetCurrentUrl;
+        HasFormResponse::setCurrentUrl as defaultSetCurrentUrl;
     }
     use Macroable {
         __call as macroCall;

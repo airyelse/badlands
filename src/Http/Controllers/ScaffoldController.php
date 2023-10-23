@@ -31,40 +31,40 @@ class ScaffoldController extends Controller
     ];
 
     public static $dataTypeMap = [
-        'int'                => 'integer',
-        'int@unsigned'       => 'unsignedInteger',
-        'tinyint'            => 'tinyInteger',
-        'tinyint@unsigned'   => 'unsignedTinyInteger',
-        'smallint'           => 'smallInteger',
-        'smallint@unsigned'  => 'unsignedSmallInteger',
-        'mediumint'          => 'mediumInteger',
+        'int' => 'integer',
+        'int@unsigned' => 'unsignedInteger',
+        'tinyint' => 'tinyInteger',
+        'tinyint@unsigned' => 'unsignedTinyInteger',
+        'smallint' => 'smallInteger',
+        'smallint@unsigned' => 'unsignedSmallInteger',
+        'mediumint' => 'mediumInteger',
         'mediumint@unsigned' => 'unsignedMediumInteger',
-        'bigint'             => 'bigInteger',
-        'bigint@unsigned'    => 'unsignedBigInteger',
+        'bigint' => 'bigInteger',
+        'bigint@unsigned' => 'unsignedBigInteger',
 
-        'date'      => 'date',
-        'time'      => 'time',
-        'datetime'  => 'dateTime',
+        'date' => 'date',
+        'time' => 'time',
+        'datetime' => 'dateTime',
         'timestamp' => 'timestamp',
 
-        'enum'   => 'enum',
-        'json'   => 'json',
+        'enum' => 'enum',
+        'json' => 'json',
         'binary' => 'binary',
 
-        'float'   => 'float',
-        'double'  => 'double',
+        'float' => 'float',
+        'double' => 'double',
         'decimal' => 'decimal',
 
-        'varchar'    => 'string',
-        'char'       => 'char',
-        'text'       => 'text',
+        'varchar' => 'string',
+        'char' => 'char',
+        'text' => 'text',
         'mediumtext' => 'mediumText',
-        'longtext'   => 'longText',
+        'longtext' => 'longText',
     ];
 
     public function index(Content $content)
     {
-        if (! config('app.debug')) {
+        if (!config('app.debug')) {
             Permission::error();
         }
 
@@ -78,9 +78,9 @@ class ScaffoldController extends Controller
         $dbTypes = static::$dbTypes;
         $dataTypeMap = static::$dataTypeMap;
         $action = URL::current();
-        $namespaceBase = 'App\\'.implode('\\', array_map(function ($name) {
-            return Str::studly($name);
-        }, explode(DIRECTORY_SEPARATOR, substr(config('admin.directory'), strlen(app_path().DIRECTORY_SEPARATOR)))));
+        $namespaceBase = 'App\\' . implode('\\', array_map(function ($name) {
+                return Str::studly($name);
+            }, explode(DIRECTORY_SEPARATOR, substr(config('admin.directory'), strlen(app_path() . DIRECTORY_SEPARATOR)))));
         $tables = collect($this->getDatabaseColumns())->map(function ($v) {
             return array_keys($v);
         })->toArray();
@@ -89,7 +89,7 @@ class ScaffoldController extends Controller
             ->title(trans('admin.scaffold.header'))
             ->description(' ')
             ->body(view(
-                'admin::helpers.scaffold',
+                'admin::helpers.scaffold2',
                 compact('dbTypes', 'action', 'tables', 'dataTypeMap', 'namespaceBase')
             ));
     }
@@ -98,20 +98,20 @@ class ScaffoldController extends Controller
     {
         return [
             'status' => 1,
-            'value'  => Str::singular($tableName),
+            'value' => Str::singular($tableName),
         ];
     }
 
     public function store(Request $request)
     {
-        if (! config('app.debug')) {
+        if (!config('app.debug')) {
             Permission::error();
         }
 
         $paths = [];
         $message = '';
 
-        $creates = (array) $request->get('create');
+        $creates = (array)$request->get('create');
         $table = Helper::slug($request->get('table_name'), '_');
         $controller = $request->get('controller_name');
         $model = $request->get('model_name');
@@ -137,7 +137,7 @@ class ScaffoldController extends Controller
 
             // 3. Create migration.
             if (in_array('migration', $creates)) {
-                $migrationName = 'create_'.$table.'_table';
+                $migrationName = 'create_' . $table . '_table';
 
                 $paths['migration'] = (new MigrationCreator(app('files')))->buildBluePrint(
                     $request->get('fields'),
@@ -189,7 +189,7 @@ class ScaffoldController extends Controller
     {
         $db = addslashes(\request('db'));
         $table = \request('tb');
-        if (! $table || ! $db) {
+        if (!$table || !$db) {
             return ['status' => 1, 'list' => []];
         }
 
@@ -201,7 +201,6 @@ class ScaffoldController extends Controller
             })
             ->filter()
             ->first();
-
         return ['status' => 1, 'list' => $tables];
     }
 
@@ -237,10 +236,10 @@ class ScaffoldController extends Controller
                 $tmp = DB::connection($connectName)->select($sql);
 
                 $collection = collect($tmp)->map(function ($v) use ($value) {
-                    if (! $p = Arr::get($value, 'prefix')) {
-                        return (array) $v;
+                    if (!$p = Arr::get($value, 'prefix')) {
+                        return (array)$v;
                     }
-                    $v = (array) $v;
+                    $v = (array)$v;
 
                     $v['TABLE_NAME'] = Str::replaceFirst($p, '', $v['TABLE_NAME']);
 
@@ -257,12 +256,12 @@ class ScaffoldController extends Controller
                         }
 
                         return [
-                            'type'     => $v['DATA_TYPE'],
-                            'default'  => $v['COLUMN_DEFAULT'],
+                            'type' => $v['DATA_TYPE'],
+                            'default' => $v['COLUMN_DEFAULT'],
                             'nullable' => $v['IS_NULLABLE'],
-                            'key'      => $v['COLUMN_KEY'],
-                            'id'       => $v['COLUMN_KEY'] === 'PRI',
-                            'comment'  => $v['COLUMN_COMMENT'],
+                            'key' => $v['COLUMN_KEY'],
+                            'id' => $v['COLUMN_KEY'] === 'PRI',
+                            'comment' => $v['COLUMN_COMMENT'],
                         ];
                     })->toArray();
                 })->toArray();
@@ -276,7 +275,7 @@ class ScaffoldController extends Controller
     protected function backWithException(\Exception $exception)
     {
         $error = new MessageBag([
-            'title'   => 'Error',
+            'title' => 'Error',
             'message' => $exception->getMessage(),
         ]);
 
@@ -288,13 +287,13 @@ class ScaffoldController extends Controller
         $messages = [];
 
         foreach ($paths as $name => $path) {
-            $messages[] = ucfirst($name).": $path";
+            $messages[] = ucfirst($name) . ": $path";
         }
 
         $messages[] = "<br />$message";
 
         $success = new MessageBag([
-            'title'   => 'Success',
+            'title' => 'Success',
             'message' => implode('<br />', $messages),
         ]);
 

@@ -2,19 +2,19 @@
 
 namespace Dcat\Admin\Http\Controllers;
 
-use App\Admin\Repositories\Project;
-use App\Models\SysDataField;
+use App\Http\Controllers\Controller;
+use App\Models\Systems\Data\FieldModel;
+use App\Models\Systems\Data\ViewModel;
+use App\Models\Systems\DynamicDataModel;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
+use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Show;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
-class AutoAdminController extends AdminController
+class AutoAdminController extends Controller
 {
-
-    public function getFormId()
-    {
-        return 1;
-    }
 
 
     /**
@@ -22,64 +22,199 @@ class AutoAdminController extends AdminController
      *
      * @return Grid
      */
-    protected function grid()
+    protected function grid(mixed $viewId)
     {
-        return Grid::make(new Project(), function (Grid $grid) {
-
-            SysDataField::where("form_id", $this->getFormId())->where("grid", true)->each(function (SysDataField $item) use ($grid) {
+        $view = ViewModel::find($viewId);
+        return Grid::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
+            $view->fields()->where("grid", true)->get()->each(function (FieldModel $item) use ($grid) {
                 $grid->column($item->name, __($item->name));
             });
-
-//            $grid->column('id')->sortable();
-//            $grid->column('name');
-//            $grid->column('created_at');
-//            $grid->column('updated_at')->sortable();
-
-//            $grid->filter(function (Grid\Filter $filter) {
-//                $filter->equal('id');
-//
-//            });
         });
     }
 
     /**
      * Make a show builder.
      *
+     * @param mixed $viewId
      * @param mixed $id
      *
      * @return Show
      */
-    protected function detail($id)
+    protected function detail(mixed $viewId, mixed $id)
     {
-        return Show::make($id, new Project(), function (Show $show) {
-            $show->field('id');
-            $show->field('name');
-            $show->field('created_at');
-            $show->field('updated_at');
+        $view = ViewModel::find($viewId);
+        return Show::make($id, DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Show $show) use ($view) {
+            $view->fields()->where("detail", true)->get()->each(function (FieldModel $item) use ($show) {
+                $show->field($item->name, __($item->name));
+            });
         });
     }
+
 
     /**
      * Make a form builder.
      *
      * @return Form
      */
-    protected function form()
+    protected function form(mixed $viewId)
     {
-        return Form::make(new Project(), function (Form $form) {
-
-            SysDataField::where("form_id", $this->getFormId())
-                ->each(function (SysDataField $item) use ($form) {
-                    $field_type = $item->type;
-                    $form->$field_type($item->name);
-                });
-
-
-//            $form->display('id');
-//            $form->text('name');
-
-//            $form->display('created_at');
-//            $form->display('updated_at');
+        $view = ViewModel::find($viewId);
+        return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
+            $view->fields()->get()->each(function (FieldModel $item) use ($form) {
+                $field_type = $item->type;
+                $form->$field_type($item->name);
+            });
         });
+    }
+
+    /**
+     * Title for current resource.
+     *
+     * @var string
+     */
+    protected $title;
+
+    /**
+     * Set description for following 4 action pages.
+     *
+     * @var array
+     */
+    protected $description = [
+        //        'index'  => 'Index',
+        //        'show'   => 'Show',
+        //        'edit'   => 'Edit',
+        //        'create' => 'Create',
+    ];
+
+    /**
+     * Set translation path.
+     *
+     * @var string
+     */
+    protected $translation;
+
+    /**
+     * Get content title.
+     *
+     * @return string
+     */
+    protected function title()
+    {
+        return $this->title ?: admin_trans_label();
+    }
+
+    /**
+     * Get description for following 4 action pages.
+     *
+     * @return array
+     */
+    protected function description()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Get translation path.
+     *
+     * @return string
+     */
+    protected function translation()
+    {
+        return $this->translation;
+    }
+
+    /**
+     * Index interface.
+     *
+     * @param string $viewId
+     * @param Content $content
+     * @return Content
+     */
+    public function index(mixed $viewId, Content $content)
+    {
+        return $content
+            ->translation($this->translation())
+            ->title($this->title())
+            ->description($this->description()['index'] ?? trans('admin.list'))
+            ->body($this->grid($viewId));
+    }
+
+    /**
+     * Show interface.
+     *
+     * @param mixed $id
+     * @param Content $content
+     * @return Content
+     */
+    public function show(mixed $viewId, mixed $id, Content $content)
+    {
+        return $content
+            ->translation($this->translation())
+            ->title($this->title())
+            ->description($this->description()['show'] ?? trans('admin.show'))
+            ->body($this->detail($viewId, $id));
+    }
+
+    /**
+     * Edit interface.
+     *
+     * @param mixed $id
+     * @param Content $content
+     * @return Content
+     */
+    public function edit(mixed $viewId, mixed $id, Content $content)
+    {
+        return $content
+            ->translation($this->translation())
+            ->title($this->title())
+            ->description($this->description()['edit'] ?? trans('admin.edit'))
+            ->body($this->form($viewId)->edit($id));
+    }
+
+    /**
+     * Create interface.
+     *
+     * @param Content $content
+     * @return Content
+     */
+    public function create(mixed $viewId, Content $content)
+    {
+        return $content
+            ->translation($this->translation())
+            ->title($this->title())
+            ->description($this->description()['create'] ?? trans('admin.create'))
+            ->body($this->form($viewId));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param int $id
+     * @return JsonResponse|RedirectResponse
+     */
+    public function update(mixed $viewId, mixed $id)
+    {
+        return $this->form($viewId)->update($id);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return mixed
+     */
+    public function store(mixed $viewId)
+    {
+        return $this->form($viewId)->store();
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(mixed $viewId, mixed $id)
+    {
+        return $this->form($viewId)->destroy($id);
     }
 }

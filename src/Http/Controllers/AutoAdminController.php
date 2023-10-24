@@ -26,7 +26,7 @@ class AutoAdminController extends Controller
     {
         $view = ViewModel::find($viewId);
         return Grid::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
-            $view->fields()->where("grid", true)->get()->each(function (FieldModel $item) use ($grid) {
+            $view->fields()->where("grid", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($grid) {
                 $grid->column($item->name, __($item->name));
             });
         });
@@ -44,7 +44,7 @@ class AutoAdminController extends Controller
     {
         $view = ViewModel::find($viewId);
         return Show::make($id, DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Show $show) use ($view) {
-            $view->fields()->where("detail", true)->get()->each(function (FieldModel $item) use ($show) {
+            $view->fields()->where("detail", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($show) {
                 $show->field($item->name, __($item->name));
             });
         });
@@ -60,7 +60,7 @@ class AutoAdminController extends Controller
     {
         $view = ViewModel::find($viewId);
         return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
-            $view->fields()->get()->each(function (FieldModel $item) use ($form) {
+            $view->fields()->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
                 $field_type = $item->type;
                 $form->$field_type($item->name);
             });

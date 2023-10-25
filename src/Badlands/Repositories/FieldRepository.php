@@ -36,12 +36,18 @@ class FieldRepository
 
     public function create(Column $column): FieldModel
     {
+        $options = [
+            "required" => [$column->getNotnull()],
+        ];
         return FieldModel::firstOrCreate(["view_uuid" => $this->getViewModel()->uuid, "name" => $column->getName()], [
             "name" => $column->getName(),
             "view_uuid" => $this->getViewModel()->uuid,
             "form_uuid" => $this->getViewModel()->form_uuid,
             "order" => $this->getViewModel()->fields()->max("order") + 1,
-            "form_settings" => ["type" => $this->typeof($column->getType(), $column->getName())]
+            "form_settings" => [
+                "type" => $this->typeof($column->getType(), $column->getName()),
+                "options" => $options,
+            ]
         ]);
     }
 

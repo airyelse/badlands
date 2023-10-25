@@ -60,8 +60,11 @@ class AutoAdminController extends Controller
     {
         $view = ViewModel::find($viewId);
         return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
-            $view->fields()->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
-                $form->{$item->getFormField()}($item->name, __($item->name));
+            $view->fields()->where('form', true)->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
+                $field = $form->{$item->typeof()}($item->name, __($item->name));
+                foreach ($item->typeOptions() as $key => $value) {
+                    $field->$key(...$value);
+                }
             });
         });
     }

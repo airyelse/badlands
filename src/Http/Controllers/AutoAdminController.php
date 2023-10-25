@@ -61,8 +61,7 @@ class AutoAdminController extends Controller
         $view = ViewModel::find($viewId);
         return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
             $view->fields()->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
-                $field_type = $item->type;
-                $form->$field_type($item->name);
+                $form->{$item->getFormField()}($item->name, __($item->name));
             });
         });
     }

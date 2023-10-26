@@ -26,11 +26,11 @@ class AutoAdminController extends Controller
     {
         $app = AppModel::find($appId);
         if ($app->views()->count() <= 0) {
-            abort(404);
+            abort(403);
         }
         $view = $app->views->first();
         return Grid::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
-            $grid->scrollbarX();
+//            $grid->scrollbarX();
             $view->fields()->where("grid", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($grid) {
                 $grid->column($item->name, __($item->name));
             });

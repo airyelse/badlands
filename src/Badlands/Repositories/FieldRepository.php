@@ -2,6 +2,7 @@
 
 namespace Dcat\Admin\Badlands\Repositories;
 
+use App\Models\Systems\Data\ColumnModel;
 use App\Models\Systems\Data\FieldModel;
 use App\Models\Systems\Data\ViewModel;
 use Doctrine\DBAL\Exception;
@@ -39,8 +40,12 @@ class FieldRepository
         $options = [
             "required" => [$column->getNotnull()],
         ];
-        return FieldModel::firstOrCreate(["view_uuid" => $this->getViewModel()->uuid, "name" => $column->getName()], [
-            "name" => $column->getName(),
+        // 创建列对象
+        // todo 尽可能关联 DBAL 的 Column ,添加支持直接修改数据库 Scheme
+        $columnObject = ColumnModel::firstOrCreate(["form_uuid" => $this->getViewModel()->form_uuid, "name" => $column->getName()]);
+        // 创建表单字段对象
+        return FieldModel::firstOrCreate(["view_uuid" => $this->getViewModel()->uuid, "column_uuid" => $columnObject->uuid], [
+            "column_uuid" => $columnObject->uuid,
             "view_uuid" => $this->getViewModel()->uuid,
             "form_uuid" => $this->getViewModel()->form_uuid,
             "order" => $this->getViewModel()->fields()->max("order") + 1,

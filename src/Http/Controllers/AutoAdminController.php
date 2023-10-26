@@ -3,8 +3,8 @@
 namespace Dcat\Admin\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Systems\AppModel;
 use App\Models\Systems\Data\FieldModel;
-use App\Models\Systems\Data\ViewModel;
 use App\Models\Systems\DynamicDataModel;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
@@ -22,10 +22,15 @@ class AutoAdminController extends Controller
      *
      * @return Grid
      */
-    protected function grid(mixed $viewId)
+    protected function grid(mixed $appId)
     {
-        $view = ViewModel::find($viewId);
+        $app = AppModel::find($appId);
+        if ($app->views()->count() <= 0) {
+            abort(404);
+        }
+        $view = $app->views->first();
         return Grid::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
+            $grid->scrollbarX();
             $view->fields()->where("grid", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($grid) {
                 $grid->column($item->name, __($item->name));
             });
@@ -35,14 +40,14 @@ class AutoAdminController extends Controller
     /**
      * Make a show builder.
      *
-     * @param mixed $viewId
+     * @param mixed $appId
      * @param mixed $id
      *
      * @return Show
      */
-    protected function detail(mixed $viewId, mixed $id)
+    protected function detail(mixed $appId, mixed $id)
     {
-        $view = ViewModel::find($viewId);
+        $view = AppModel::find($appId)->view;
         return Show::make($id, DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Show $show) use ($view) {
             $view->fields()->where("detail", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($show) {
                 $show->field($item->name, __($item->name));
@@ -56,9 +61,9 @@ class AutoAdminController extends Controller
      *
      * @return Form
      */
-    protected function form(mixed $viewId)
+    protected function form(mixed $appId)
     {
-        $view = ViewModel::find($viewId);
+        $view = AppModel::find($appId)->view;
         return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
             $view->fields()->where('form', true)->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
                 $field = $form->{$item->typeof()}($item->name, __($item->name));
@@ -128,17 +133,17 @@ class AutoAdminController extends Controller
     /**
      * Index interface.
      *
-     * @param string $viewId
+     * @param string $appId
      * @param Content $content
      * @return Content
      */
-    public function index(mixed $viewId, Content $content)
+    public function index(mixed $appId, Content $content)
     {
         return $content
             ->translation($this->translation())
             ->title($this->title())
             ->description($this->description()['index'] ?? trans('admin.list'))
-            ->body($this->grid($viewId));
+            ->body($this->grid($appId));
     }
 
     /**
@@ -148,13 +153,13 @@ class AutoAdminController extends Controller
      * @param Content $content
      * @return Content
      */
-    public function show(mixed $viewId, mixed $id, Content $content)
+    public function show(mixed $appId, mixed $id, Content $content)
     {
         return $content
             ->translation($this->translation())
             ->title($this->title())
             ->description($this->description()['show'] ?? trans('admin.show'))
-            ->body($this->detail($viewId, $id));
+            ->body($this->detail($appId, $id));
     }
 
     /**
@@ -164,13 +169,13 @@ class AutoAdminController extends Controller
      * @param Content $content
      * @return Content
      */
-    public function edit(mixed $viewId, mixed $id, Content $content)
+    public function edit(mixed $appId, mixed $id, Content $content)
     {
         return $content
             ->translation($this->translation())
             ->title($this->title())
             ->description($this->description()['edit'] ?? trans('admin.edit'))
-            ->body($this->form($viewId)->edit($id));
+            ->body($this->form($appId)->edit($id));
     }
 
     /**
@@ -179,13 +184,13 @@ class AutoAdminController extends Controller
      * @param Content $content
      * @return Content
      */
-    public function create(mixed $viewId, Content $content)
+    public function create(mixed $appId, Content $content)
     {
         return $content
             ->translation($this->translation())
             ->title($this->title())
             ->description($this->description()['create'] ?? trans('admin.create'))
-            ->body($this->form($viewId));
+            ->body($this->form($appId));
     }
 
     /**
@@ -194,9 +199,9 @@ class AutoAdminController extends Controller
      * @param int $id
      * @return JsonResponse|RedirectResponse
      */
-    public function update(mixed $viewId, mixed $id)
+    public function update(mixed $appId, mixed $id)
     {
-        return $this->form($viewId)->update($id);
+        return $this->form($appId)->update($id);
     }
 
     /**
@@ -204,9 +209,9 @@ class AutoAdminController extends Controller
      *
      * @return mixed
      */
-    public function store(mixed $viewId)
+    public function store(mixed $appId)
     {
-        return $this->form($viewId)->store();
+        return $this->form($appId)->store();
     }
 
     /**
@@ -215,8 +220,8 @@ class AutoAdminController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(mixed $viewId, mixed $id)
+    public function destroy(mixed $appId, mixed $id)
     {
-        return $this->form($viewId)->destroy($id);
+        return $this->form($appId)->destroy($id);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Systems\AppModel;
 use App\Models\Systems\Data\FieldModel;
 use App\Models\Systems\DynamicDataModel;
+use Dcat\Admin\Badlands\Form\Footer;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Layout\Content;
@@ -71,6 +72,11 @@ class AutoAdminController extends Controller
                     $field->$key(...$value);
                 }
             });
+            $form->disableCreatingCheck();
+            $form->disableViewCheck();
+            $form->disableEditingCheck();
+            $form->disableResetButton();
+
         });
     }
 

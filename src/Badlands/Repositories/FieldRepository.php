@@ -37,11 +37,12 @@ class FieldRepository
 
     public function create(Column $column): FieldModel
     {
-        $options = [
-            "required" => [$column->getNotnull()],
-        ];
-        // 创建列对象
+        $options = [];
+        if ($column->getNotnull() === true) {
+            $options["required"] = [];
+        }
         // todo 尽可能关联 DBAL 的 Column ,添加支持直接修改数据库 Scheme
+        // 创建列对象
         $columnObject = ColumnModel::firstOrCreate(["form_uuid" => $this->getViewModel()->form_uuid, "name" => $column->getName()]);
         // 创建表单字段对象
         return FieldModel::firstOrCreate(["view_uuid" => $this->getViewModel()->uuid, "column_uuid" => $columnObject->uuid], [

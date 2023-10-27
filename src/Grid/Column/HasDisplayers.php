@@ -250,6 +250,7 @@ trait HasDisplayers
         $grid = $this->grid;
 
         return $this->display(function ($_, $column) use ($action, $grid) {
+
             /** @var RowAction $action */
             if (! ($action instanceof RowAction)) {
                 $action = $action::make();

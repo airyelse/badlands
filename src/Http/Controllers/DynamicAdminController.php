@@ -7,7 +7,7 @@ use App\Admin\Actions\Show\SubmitOptionToNext;
 use App\Http\Controllers\Controller;
 use App\Models\Systems\AppModel;
 use App\Models\Systems\Data\FieldModel;
-use App\Models\Systems\DynamicDataModel;
+use App\Models\Systems\DynamicModel;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Layout\Content;
@@ -15,11 +15,12 @@ use Dcat\Admin\Show;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
-class AutoAdminController extends Controller
+class DynamicAdminController extends Controller
 {
-
-
     /**
+     * protected array $properties = [];
+     *
+     * /**
      * Make a grid builder.
      *
      * @return Grid
@@ -31,7 +32,7 @@ class AutoAdminController extends Controller
             abort(403);
         }
         $view = $app->views->first();
-        return Grid::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
+        return Grid::make(DynamicModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Grid $grid) use ($view) {
 //            $grid->scrollbarX();
             $view->fields()->where("grid", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($grid) {
                 $grid->column($item->name, __($item->name));
@@ -54,16 +55,17 @@ class AutoAdminController extends Controller
             abort(403);
         }
         $view = $app->views->first();
-        return Show::make($id, DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Show $show)
+        return Show::make($id, DynamicModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Show $show)
         use ($app, $view) {
             $view->fields()->where("detail", true)->orderBy("order")->get()->each(function (FieldModel $item) use ($show) {
-                $show->field($item->name, __($item->name));
+                $show->field($item->name, __($item->name))->escape(false);
             });
             $show->panel()->tools(function (Show\Tools $tools)
             use ($app, $view) {
                 $tools->disableEdit();
                 $tools->disableDelete();
                 $tools->append((new StartProcessToNext($app->uuid, $view->uuid)));
+                $tools->append((new SubmitOptionToNext($app->uuid, $view->uuid)));
             });
         });
     }
@@ -76,8 +78,13 @@ class AutoAdminController extends Controller
      */
     protected function form(mixed $appId)
     {
-        $view = AppModel::find($appId)->view;
-        return Form::make(DynamicDataModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
+
+        $app = AppModel::find($appId);
+        if ($app->views()->count() <= 0) {
+            abort(403);
+        }
+        $view = $app->views->first();
+        return Form::make(DynamicModel::createModelBy($view->form->connection_name, $view->form->table_name), function (Form $form) use ($view) {
             $view->fields()->where('form', true)->orderBy("order")->get()->each(function (FieldModel $item) use ($form) {
                 $field = $form->{$item->typeof()}($item->name, __($item->name));
                 foreach ($item->typeOptions() as $key => $value) {

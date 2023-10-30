@@ -89,7 +89,7 @@ class ScaffoldController extends Controller
             ->title(trans('admin.scaffold.header'))
             ->description(' ')
             ->body(view(
-                'admin::helpers.scaffold2',
+                'admin::helpers.scaffold',
                 compact('dbTypes', 'action', 'tables', 'dataTypeMap', 'namespaceBase')
             ));
     }

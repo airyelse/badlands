@@ -122,6 +122,17 @@ class Select extends Field
         return $this;
     }
 
+    public function loadByModel($model,$valueName = 'name',$keyName = 'uuid'){
+        if (! class_exists($model)
+            || ! in_array(Model::class, class_parents($model))
+        ) {
+            throw new RuntimeException("[$model] must be a valid model class");
+        }
+        $this->options =  $model::pluck($valueName, $keyName)->toArray();
+        return $this;
+    }
+
+
     /**
      * Load options from remote.
      *

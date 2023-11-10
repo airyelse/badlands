@@ -18,7 +18,7 @@ class File extends Field implements UploadFieldInterface
      * @var array
      */
     protected $options = [
-        'events' => [],
+        'events'   => [],
         'override' => false,
     ];
 
@@ -57,7 +57,7 @@ class File extends Field implements UploadFieldInterface
             return $this->validator->call($this, $input);
         }
 
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -68,17 +68,17 @@ class File extends Field implements UploadFieldInterface
         $requiredIf = null;
 
         $fileLimit = $this->options['fileNumLimit'] ?? 1;
-        if (!empty($value) && $fileLimit > 1){
-            $rules[$this->column][] = function($atribute,$value,$fail)use($fileLimit){
+        if (!empty($value) && $fileLimit > 1) {
+            $rules[$this->column][] = function ($atribute, $value, $fail) use ($fileLimit) {
                 $value = array_filter(is_array($value) ? $value : explode(',', $value));
-                if (count($value) > $fileLimit ) {
+                if (count($value) > $fileLimit) {
                     $fail(trans('admin.uploader.max_file_limit', ['attribute' => $this->label, 'max' => $fileLimit]));
                 }
             };
             return Validator::make($input, $rules, $this->getValidationMessages(), $attributes);
         }
 
-        if (! $this->hasRule('required') && ! $requiredIf = $this->getRule('required_if*')) {
+        if (!$this->hasRule('required') && !$requiredIf = $this->getRule('required_if*')) {
             return false;
         }
 
@@ -136,9 +136,9 @@ class File extends Field implements UploadFieldInterface
 
         foreach (Helper::array($this->value()) as $value) {
             $previews[] = [
-                'id'   => $value,
-                'path' => Helper::basename($value),
-                'url'  => $this->objectUrl($value),
+                'id'   => $value['id'] ?? $value,
+                'path' => $value['name'] ?? Helper::basename($value),
+                'url'  => $this->objectUrl($value['url'] ?? $value),
             ];
         }
 
@@ -157,7 +157,7 @@ class File extends Field implements UploadFieldInterface
     {
         $this->setDefaultServer();
 
-        if (! empty($this->value())) {
+        if (!empty($this->value())) {
             $this->setupPreviewOptions();
         }
 
@@ -179,7 +179,10 @@ class File extends Field implements UploadFieldInterface
     protected function formatValue()
     {
         if ($this->value !== null) {
-            $this->value = implode(',', Helper::array($this->value));
+//            $this->value = implode(',', Helper::array($this->value));
+            // 为了更多的细节
+            $this->value = json_encode($this->value);
+
         } elseif (is_array($this->default)) {
             $this->default = implode(',', $this->default);
         }
@@ -190,9 +193,9 @@ class File extends Field implements UploadFieldInterface
      *
      * @see http://fex.baidu.com/webuploader/doc/index.html#WebUploader_Uploader_events
      *
-     * @param  string  $event
-     * @param  string  $script
-     * @param  bool  $once
+     * @param string $event
+     * @param string $script
+     * @param bool $once
      * @return $this
      */
     public function on(string $event, string $script, bool $once = false)
@@ -209,8 +212,8 @@ class File extends Field implements UploadFieldInterface
      *
      * @see http://fex.baidu.com/webuploader/doc/index.html#WebUploader_Uploader_events
      *
-     * @param  string  $event
-     * @param  string  $script
+     * @param string $event
+     * @param string $script
      * @return $this
      */
     public function once(string $event, string $script)
@@ -219,8 +222,8 @@ class File extends Field implements UploadFieldInterface
     }
 
     /**
-     * @param  Field  $field
-     * @param  string|array  $fieldRules
+     * @param Field $field
+     * @param string|array $fieldRules
      * @return void
      */
     public static function deleteRules(Field $field, &$fieldRules)

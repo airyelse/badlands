@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 trait UploadField
 {
     use HasUploadedFile {
-        disk as _disk;
+        HasUploadedFile::disk as _disk;
     }
 
     /**

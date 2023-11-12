@@ -292,6 +292,11 @@ class EmbeddedForm
         return $this;
     }
 
+    public function getColumnName(): string
+    {
+        return $this->column;
+    }
+
     /**
      * Add nested-form fields dynamically.
      *
@@ -308,6 +313,7 @@ class EmbeddedForm
             $field = new $className($column, array_slice($arguments, 1));
 
             $field->setForm($this->parent);
+            $field->setParent($this);
 
             $this->pushField($field);
 

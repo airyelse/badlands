@@ -8,6 +8,7 @@ use Dcat\Admin\Form\Field;
 use Dcat\Admin\Form\ResolveField;
 use Dcat\Admin\Support\Helper;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -43,14 +44,14 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Prepare input data for insert or update.
      *
-     * @param  array  $input
+     * @param  array  $value
      * @return array
      */
-    protected function prepareInputValue($input)
+    protected function prepareInputValue($value)
     {
         $form = $this->buildEmbeddedForm();
 
-        return $form->setOriginal($this->original)->prepare($input);
+        return $form->setOriginal($this->original)->prepare($value);
     }
 
     /**
@@ -245,7 +246,13 @@ class Embeds extends Field implements FieldsCollection
      */
     protected function buildEmbeddedForm()
     {
-        $form = new EmbeddedForm($this->column);
+        if ($this->parent instanceof EmbeddedForm) {
+            $column = "{$this->parent->getColumnName()}.$this->column";
+        } else {
+            $column = $this->column;
+        }
+
+        $form = new EmbeddedForm($column);
 
         $form->setParent($this->form);
 
@@ -286,9 +293,9 @@ class Embeds extends Field implements FieldsCollection
     /**
      * 获取所有字段.
      *
-     * @return void
+     * @return Collection
      */
-    public function fields()
+    public function fields(): Collection
     {
         return $this->buildEmbeddedForm()->fields();
     }

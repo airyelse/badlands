@@ -2,6 +2,7 @@
 
 namespace Dcat\Admin\Form\Field;
 
+use Dcat\Admin\Form\EmbeddedForm;
 use Dcat\Admin\Form\NestedForm;
 use Dcat\Admin\Support\Helper;
 
@@ -57,7 +58,12 @@ class ArrayField extends HasMany
 
     public function buildNestedForm($key = null)
     {
-        $form = new NestedForm($this->getNestedFormColumnName());
+
+        if($this->parent instanceof EmbeddedForm){
+            $form = new NestedForm($this->getNestedFormColumnName($this->parent->getColumnName()));
+        }else{
+            $form = new NestedForm($this->getNestedFormColumnName());
+        }
 
         $this->setNestedFormDefaultKey($form);
 

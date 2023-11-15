@@ -24,6 +24,8 @@ class UserController extends AdminController
             $grid->column('id', 'ID')->sortable();
             $grid->column('username');
             $grid->column('name');
+            $grid->column('company');
+            $grid->column('position');
 
             if (config('admin.permission.enable')) {
                 $grid->column('roles')->pluck('name')->label('primary', 3);
@@ -33,7 +35,7 @@ class UserController extends AdminController
                 $nodes = (new $permissionModel())->allNodes();
                 $grid->column('permissions')
                     ->if(function () {
-                        return ! $this->roles->isEmpty();
+                        return !$this->roles->isEmpty();
                     })
                     ->showTreeInDialog(function (Grid\Displayers\DialogTree $tree) use (&$nodes, $roleModel) {
                         $tree->nodes($nodes);
@@ -77,7 +79,7 @@ class UserController extends AdminController
 
             if (config('admin.permission.enable')) {
                 $show->field('roles')->as(function ($roles) {
-                    if (! $roles) {
+                    if (!$roles) {
                         return;
                     }
 
@@ -102,7 +104,7 @@ class UserController extends AdminController
                         }
                     }
 
-                    if (! $isAdministrator) {
+                    if (!$isAdministrator) {
                         $keyName = $permissionModel->getKeyName();
                         $tree->check(
                             $roleModel::getPermissionId(array_column($roles, $keyName))->flatten()
@@ -135,6 +137,10 @@ class UserController extends AdminController
                 ->updateRules(['required', "unique:{$connection}.{$userTable},username,$id"]);
             $form->text('name', trans('admin.name'))->required();
             $form->image('avatar', trans('admin.avatar'))->autoUpload();
+
+            $form->tel('telephone');
+            $form->text('position');
+            $form->text('company');
 
             if ($id) {
                 $form->password('password', trans('admin.password'))
@@ -177,7 +183,7 @@ class UserController extends AdminController
                 $form->password = bcrypt($form->password);
             }
 
-            if (! $form->password) {
+            if (!$form->password) {
                 $form->deleteInput('password');
             }
         });

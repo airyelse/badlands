@@ -118,7 +118,8 @@ trait ModelTree
      */
     public function allNodes()
     {
-        return $this->callQueryCallbacks(new static())
+        // origin new static()
+        return $this->callQueryCallbacks($this->newQuery())
             ->orderBy($this->getOrderColumn(), 'asc')
             ->get();
     }

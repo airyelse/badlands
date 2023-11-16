@@ -24,8 +24,8 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Create a new HasMany field instance.
      *
-     * @param  string  $column
-     * @param  array  $arguments
+     * @param string $column
+     * @param array $arguments
      */
     public function __construct($column, $arguments = [])
     {
@@ -44,7 +44,7 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Prepare input data for insert or update.
      *
-     * @param  array  $value
+     * @param array $value
      * @return array
      */
     protected function prepareInputValue($value)
@@ -59,7 +59,7 @@ class Embeds extends Field implements FieldsCollection
      */
     public function getValidator(array $input)
     {
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -69,7 +69,7 @@ class Embeds extends Field implements FieldsCollection
 
         /** @var Field $field */
         foreach ($this->buildEmbeddedForm()->fields() as $field) {
-            if (! $fieldRules = $field->getRules()) {
+            if (!$fieldRules = $field->getRules()) {
                 continue;
             }
 
@@ -147,15 +147,15 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Format validation messages.
      *
-     * @param  array  $input
-     * @param  array  $messages
+     * @param array $input
+     * @param array $messages
      * @return array
      */
     protected function formatValidationMessages(array $input, array $messages)
     {
         $result = [];
         foreach ($messages as $k => $message) {
-            $result[$this->column.'.'.$k] = $message;
+            $result[$this->column . '.' . $k] = $message;
         }
 
         return $result;
@@ -164,9 +164,9 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Format validation attributes.
      *
-     * @param  array  $input
-     * @param  string  $label
-     * @param  string  $column
+     * @param array $input
+     * @param string $label
+     * @param string $column
      * @return array
      */
     protected function formatValidationAttribute($input, $label, $column)
@@ -175,7 +175,7 @@ class Embeds extends Field implements FieldsCollection
 
         if (is_array($column)) {
             foreach ($column as $index => $col) {
-                $new[$col.$index] = $col;
+                $new[$col . $index] = $col;
             }
         }
 
@@ -187,7 +187,7 @@ class Embeds extends Field implements FieldsCollection
             } else {
                 foreach ($new as $k => $val) {
                     if (Str::endsWith($key, ".$k")) {
-                        $attributes[$key] = $label."[$val]";
+                        $attributes[$key] = $label . "[$val]";
                     }
                 }
             }
@@ -199,8 +199,8 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Reset input key for validation.
      *
-     * @param  array  $input
-     * @param  array  $column  $column is the column name array set
+     * @param array $input
+     * @param array $column $column is the column name array set
      * @return void.
      */
     public function resetInputKey(array &$input, array $column)
@@ -208,11 +208,11 @@ class Embeds extends Field implements FieldsCollection
         $column = array_flip($column);
 
         foreach (Arr::get($input, $this->column) as $key => $value) {
-            if (! array_key_exists($key, $column)) {
+            if (!array_key_exists($key, $column)) {
                 continue;
             }
 
-            $newKey = $key.$column[$key];
+            $newKey = $key . $column[$key];
 
             /*
              * set new key
@@ -248,11 +248,14 @@ class Embeds extends Field implements FieldsCollection
     {
         if ($this->parent instanceof EmbeddedForm) {
             $column = "{$this->parent->getColumnName()}.$this->column";
+            $form = new EmbeddedForm($column, true);
+            $this->set('hasParentEmbed', true);
+
         } else {
             $column = $this->column;
+            $form = new EmbeddedForm($column);
+            $this->set('hasParentEmbed', false);
         }
-
-        $form = new EmbeddedForm($column);
 
         $form->setParent($this->form);
 
@@ -273,14 +276,13 @@ class Embeds extends Field implements FieldsCollection
     public function render()
     {
         $this->addVariables(['form' => $this->buildEmbeddedForm()]);
-
         return parent::render();
     }
 
     /**
      * 根据字段名称查找字段.
      *
-     * @param  string  $column
+     * @param string $column
      * @return Field|null
      */
     public function field($name)

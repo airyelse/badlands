@@ -138,10 +138,6 @@ class UserController extends AdminController
             $form->text('name', trans('admin.name'))->required();
             $form->image('avatar', trans('admin.avatar'))->autoUpload();
 
-            $form->tel('telephone');
-            $form->text('position');
-            $form->text('company');
-
             if ($id) {
                 $form->password('password', trans('admin.password'))
                     ->minLength(5)

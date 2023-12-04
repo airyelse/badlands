@@ -27,11 +27,11 @@
 <div class="dashboard-title card bg-primary">
     <div class="card-body">
         <div class="text-center ">
-            <img class="avatar img-circle shadow mt-1" src="{{ admin_asset('@admin/images/logo.png') }}">
+{{--            <img class="avatar img-circle shadow mt-1 " src="{{ admin_asset('@admin/images/logo.png') }}">--}}
 
             <div class="text-center mb-1">
-                <h1 class="mb-3 mt-2 text-white">Dcat Admin</h1>
-                <div class="links">
+                <h1 class="mt-2 text-white">Dcat Admin</h1>
+                <div class="links mb-1">
                     <a href="https://github.com/jqhph/dcat-admin" target="_blank">Github</a>
                     <a href="http://www.dcatadmin.com/" id="doc-link" target="_blank">{{ __('admin.documentation') }}</a>
                     <a href="http://www.dcatadmin.com/" id="demo-link" target="_blank">{{ __('admin.extensions') }}</a>

@@ -39,7 +39,11 @@
     },
     "scripts": {
         "phpstan": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "post-update-cmd": [
+            "php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "php artisan lang:update"
+        ]
     },
     "extra": {
         "laravel": {

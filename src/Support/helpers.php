@@ -362,7 +362,6 @@ if (! function_exists('admin_info')) {
     function admin_info($title, $message = '', $type = 'info')
     {
         $message = new MessageBag(get_defined_vars());
-
         session()->flash($type, $message);
     }
 }

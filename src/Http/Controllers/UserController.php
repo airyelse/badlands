@@ -75,7 +75,7 @@ class UserController extends AdminController
             $show->field('username');
             $show->field('name');
 
-            $show->field('avatar', __('admin.avatar'))->image();
+            $show->field('avatar', __('admin.avatar'))->image('/admin/attachment/group-first/');
 
             if (config('admin.permission.enable')) {
                 $show->field('roles')->as(function ($roles) {

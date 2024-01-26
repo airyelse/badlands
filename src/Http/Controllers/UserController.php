@@ -2,6 +2,7 @@
 
 namespace Dcat\Admin\Http\Controllers;
 
+use App\Models\Organization;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Http\Auth\Permission;
@@ -24,7 +25,9 @@ class UserController extends AdminController
             $grid->column('id', 'ID')->sortable();
             $grid->column('username');
             $grid->column('name');
-            $grid->column('company');
+            $grid->column('organization_id')->display(function ($organization) {
+                return Organization::find($organization)?->title;
+            });
             $grid->column('position');
 
             if (config('admin.permission.enable')) {
